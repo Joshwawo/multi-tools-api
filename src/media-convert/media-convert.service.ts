@@ -15,28 +15,18 @@ export class MediaConvertService {
     return mediaFile;
   }
 
-  findAll() {
-    return `This action returns all mediaConvert`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} mediaConvert`;
-  }
-
-  update(id: number, updateMediaConvertDto: UpdateMediaConvertDto) {
-    return `This action updates a #${id} mediaConvert`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} mediaConvert`;
-  }
   createBulkConvert(mediaFiles: CreateMediaConvertDto[]) {
     if (!mediaFiles) {
       return {
         message: 'No file uploaded',
       };
     }
-    return mediaFiles;
+    const tmpPath = path.join(__dirname, '..', '..', 'tmp');
+    const withPath = mediaFiles.map((file) => {
+      return path.join(tmpPath, file as string);
+
+    })
+    return withPath;
   }
   seeTempFile(fileName: string) {
     try {
@@ -54,4 +44,27 @@ export class MediaConvertService {
       });
     }
   }
-}
+  /**
+   * Elimina todos los archivos de la carpeta tmp
+   */
+  deleteTmpFiles() {
+    //Eliminar todos los arhivos de la carpeta tmp
+    const tmpPath = path.join(__dirname, '..', '..', 'tmp');
+    fs.readdir(tmpPath, (err, files) => {
+      if (err) {
+        throw new HttpException('Directory not found', HttpStatus.NOT_FOUND);
+      }
+      for (const file of files) {
+        fs.unlink(path.join(tmpPath, file), (err) => {
+          if (err) {
+            throw new HttpException('Error deleting file', HttpStatus.BAD_REQUEST);
+          }
+        });
+      }
+    }
+    )
+    return {
+      message: 'All files deleted',
+    };
+  }
+} 

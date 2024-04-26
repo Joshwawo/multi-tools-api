@@ -10,6 +10,7 @@ import {
   UploadedFile,
   UploadedFiles,
   Res,
+  Delete,
 } from '@nestjs/common';
 import { MediaConvertService } from './media-convert.service';
 // import { CreateMediaConvertDto } from './dto/create-media-convert.dto';
@@ -23,8 +24,13 @@ import { Response } from 'express';
 @Controller('media-convert')
 export class MediaConvertController {
   // eslint-disable-next-line no-unused-vars
-  constructor(private readonly mediaConvertService: MediaConvertService) {}
-
+  constructor(private readonly mediaConvertService: MediaConvertService) { }
+  @Get('/tmp/:fileName')
+  seeTempFile(@Res() response: Response, @Param('fileName') fileName: string) {
+    // console.log('Param fileName: ', fileName);
+    const tempFile = this.mediaConvertService.seeTempFile(fileName);
+    return response.sendFile(tempFile);
+  }
   @Post('/webp')
   @UseInterceptors(FileInterceptor('file'))
   create(@UploadedFile(SharpPipe) mediaFile: string) {
@@ -43,15 +49,12 @@ export class MediaConvertController {
   createBulk(@UploadedFiles(SharpPipeArray) mediaFiles: string[]) {
     return this.mediaConvertService.createBulkConvert(mediaFiles);
   }
-  @Get('/temp/:fileName')
-  seeTempFile(@Res() response: Response, @Param('fileName') fileName: string) {
-    console.log('Param fileName: ', fileName);
-    const tempFile = this.mediaConvertService.seeTempFile(fileName);
-    return response.sendFile(tempFile);
+
+  @Delete('/tmp')
+  deleteTmpFiles() {
+    return this.mediaConvertService.deleteTmpFiles();
   }
 
-  @Get()
-  findAll() {
-    return this.mediaConvertService.findAll();
-  }
+
+
 }
