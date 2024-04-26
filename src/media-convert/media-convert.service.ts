@@ -1,33 +1,78 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { CreateMediaConvertDto } from './dto/create-media-convert.dto';
-import { UpdateMediaConvertDto } from './dto/update-media-convert.dto';
 import * as path from 'path';
 import * as fs from 'fs';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { CreateMediaConvertDto } from './dto/create-media-convert.dto';
+import { MediaConvertModel } from './entities/media-convert.entity'
+import { InjectModel } from '@nestjs/sequelize';
+import { v4 } from 'uuid';
 
 @Injectable()
 export class MediaConvertService {
-  create(mediaFile: CreateMediaConvertDto) {
-    if (!mediaFile) {
-      return {
-        message: 'No file uploaded',
-      };
-    }
-    return mediaFile;
+
+  constructor(
+    @InjectModel(MediaConvertModel)
+    private productRepository: typeof MediaConvertModel,
+  ) { }
+
+  //* DB METHODS
+  //* GET METHODS
+  getAllTmpFilesDb() {
+    return this.productRepository.findAll();
+  }
+  getAllUserFilesDb(userId: string) {
+    return this.productRepository.findAll({ where: { creatorId: userId } });
   }
 
-  createBulkConvert(mediaFiles: CreateMediaConvertDto[]) {
-    if (!mediaFiles) {
-      return {
-        message: 'No file uploaded',
-      };
+  //* POST METHODS
+  createBulkConvertDb(mediaFiles: string[], body: CreateMediaConvertDto) {
+    try {
+      if (!mediaFiles) {
+        return {
+          message: 'No file uploaded',
+        };
+      }
+      // const tmpPath = path.join(__dirname, '..', '..', 'tmp');
+      //Agregar uuid y creatorId a cada archivo
+      //Crear un nuevo arreglo con los datos de los archivos
+      const saveArr = mediaFiles.map((_file) => {
+        return {
+          fileName: _file,
+          uuid: v4(),
+          mimeType: _file.split('.')[1],
+          creatorId: body.creatorId,
+        }
+      })
+      return this.productRepository.bulkCreate(saveArr);
+    } catch (error) {
+      console.log('Error: ', error)
+      throw error
+      // throw new HttpException('Error creating file', HttpStatus.BAD_REQUEST, {
+      //   cause: error,
+      // });
     }
-    const tmpPath = path.join(__dirname, '..', '..', 'tmp');
-    const withPath = mediaFiles.map((file) => {
-      return path.join(tmpPath, file as string);
-
-    })
-    return withPath;
   }
+  //* DELETE METHODS
+  async deteleAllTmpFileDb() {
+    const deleteFiles = await this.productRepository.destroy({ where: {} });
+    if(deleteFiles === 0){
+      return {
+        message: 'No files to delete',
+      }
+    }
+    return {
+      message: 'All files deleted',
+    };
+    // console.log('deleteFiles: ', deleteFiles);
+    // return deleteFiles;
+  }
+
+
+
+  //___________________________________________________________
+
+
+
+  //* GET METHODS
   seeTempFile(fileName: string) {
     try {
       const savedPath = path.join(__dirname, '..', '..', 'tmp', fileName);
@@ -44,6 +89,19 @@ export class MediaConvertService {
       });
     }
   }
+
+  //* POST METHODS
+  create(mediaFile: string) {
+    if (!mediaFile) {
+      return {
+        message: 'No file uploaded',
+      };
+    }
+    return mediaFile;
+  }
+
+
+  //* DELETE METHODS
   /**
    * Elimina todos los archivos de la carpeta tmp
    */

@@ -30,6 +30,7 @@ export class SharpPipe
 export class SharpPipeArray
   implements PipeTransform<Express.Multer.File, Promise<string>> {
   async transform(image: any): Promise<any> {
+    // console.log('IMAGE: ', image);
     //Ruta donde se guardaran las imagenes
     const savedPath = path.join(__dirname, '..', '..', '..', 'tmp');
     //Verificar si es un array

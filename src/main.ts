@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as morgan from 'morgan';
-import { VersioningType } from '@nestjs/common';
+import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { HttpExceptionFilter } from './utils/errorHandler/exception-handler';
 
 async function bootstrap() {
@@ -13,6 +13,7 @@ async function bootstrap() {
     // defaultVersion: '1',
     type: VersioningType.URI,
   });
+  app.useGlobalPipes(new ValidationPipe());
   const config = new DocumentBuilder()
   .addBasicAuth()
   .setTitle('API DOCS FOR UTILS TOOLS')

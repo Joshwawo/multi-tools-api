@@ -11,9 +11,14 @@ import {
   UploadedFiles,
   Res,
   Delete,
+  Body,
+  UsePipes,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { MediaConvertService } from './media-convert.service';
-// import { CreateMediaConvertDto } from './dto/create-media-convert.dto';
+import { CreateMediaConvertDto } from './dto/create-media-convert.dto';
+import {ValidationPipe} from '@nestjs/common'
 // import { UpdateMediaConvertDto } from './dto/update-media-convert.dto';
 import {
   FileFieldsInterceptor,
@@ -31,12 +36,19 @@ export class MediaConvertController {
     const tempFile = this.mediaConvertService.seeTempFile(fileName);
     return response.sendFile(tempFile);
   }
-  @Post('/webp')
-  @UseInterceptors(FileInterceptor('file'))
-  create(@UploadedFile(SharpPipe) mediaFile: string) {
-    return this.mediaConvertService.create(mediaFile);
+  // * DB METHODS
+  // * GET METHODS
+  @Get('/tmp')
+  getAllTmpFilesDb() {
+    return this.mediaConvertService.getAllTmpFilesDb();
   }
 
+  @Get('/tmp/user/:userId')
+  getAllUserFilesDb(@Param('userId') userId: string) {
+    return this.mediaConvertService.getAllUserFilesDb(userId);
+  }
+
+  // * POST METHODS
   @Post('/webp-bulk')
   @UseInterceptors(
     FileFieldsInterceptor([
@@ -46,11 +58,35 @@ export class MediaConvertController {
       },
     ]),
   )
-  createBulk(@UploadedFiles(SharpPipeArray) mediaFiles: string[]) {
-    return this.mediaConvertService.createBulkConvert(mediaFiles);
+  // @UsePipes(new ValidationPipe())
+  createBulkDb(@UploadedFiles(SharpPipeArray) mediaFiles: string[], @Body() body: CreateMediaConvertDto) {
+    try {
+      console.log("BODY: ", body)
+      return this.mediaConvertService.createBulkConvertDb(mediaFiles, body);
+    } catch (error) {
+      console.log('Error: ', error);
+      throw new HttpException('Error creating file', HttpStatus.BAD_REQUEST)
+    }
   }
 
+  // * DELETE METHODS
   @Delete('/tmp')
+  deteleAllTmpFileDb() {
+    return this.mediaConvertService.deteleAllTmpFileDb();
+  }
+
+  //----------------------------------------------//
+  // * POST METHODS
+  @Post('/webp')
+  @UseInterceptors(FileInterceptor('file'))
+  create(@UploadedFile(SharpPipe) mediaFile: string) {
+    return this.mediaConvertService.create(mediaFile);
+  }
+
+  //* DELETE METHODS
+
+
+  @Delete('/tmp/files')
   deleteTmpFiles() {
     return this.mediaConvertService.deleteTmpFiles();
   }
