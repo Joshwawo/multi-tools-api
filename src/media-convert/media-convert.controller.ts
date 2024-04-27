@@ -61,7 +61,7 @@ export class MediaConvertController {
   // @UsePipes(new ValidationPipe())
   createBulkDb(@UploadedFiles(SharpPipeArray) mediaFiles: string[], @Body() body: CreateMediaConvertDto) {
     try {
-      console.log("BODY: ", body)
+      // console.log("BODY: ", body)
       return this.mediaConvertService.createBulkConvertDb(mediaFiles, body);
     } catch (error) {
       console.log('Error: ', error);

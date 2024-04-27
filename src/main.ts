@@ -6,7 +6,9 @@ import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { HttpExceptionFilter } from './utils/errorHandler/exception-handler';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    cors: true,
+  });
   app.useGlobalFilters(new HttpExceptionFilter())
   app.use(morgan('dev'));
   app.enableVersioning({
