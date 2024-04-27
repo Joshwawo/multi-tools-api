@@ -17,4 +17,19 @@ export class MediaConvertModel extends Model {
 
     @Column
     fileName: string
+
+    @Column
+    originalName: string
+    
+    @Column
+    originalSize: number
+
+    @Column
+    originalMimeType: string
+
+    @Column
+    batchId: string
+
+    @Column
+    createdAt: Date
 }

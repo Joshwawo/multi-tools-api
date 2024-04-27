@@ -1,7 +1,7 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { CreateMediaConvertDto } from './dto/create-media-convert.dto';
+import { CreateMediaConvertDto, CreateMediaConvertDtoArray } from './dto/create-media-convert.dto';
 import { MediaConvertModel } from './entities/media-convert.entity'
 import { InjectModel } from '@nestjs/sequelize';
 import { v4 } from 'uuid';
@@ -24,7 +24,9 @@ export class MediaConvertService {
   }
 
   //* POST METHODS
-  createBulkConvertDb(mediaFiles: string[], body: CreateMediaConvertDto) {
+  
+  createBulkConvertDb(mediaFiles: CreateMediaConvertDtoArray[], body: CreateMediaConvertDto) {
+
     try {
       if (!mediaFiles) {
         return {
@@ -34,12 +36,14 @@ export class MediaConvertService {
       // const tmpPath = path.join(__dirname, '..', '..', 'tmp');
       //Agregar uuid y creatorId a cada archivo
       //Crear un nuevo arreglo con los datos de los archivos
+      console.log('mediaFiles: ', mediaFiles);
       const saveArr = mediaFiles.map((_file) => {
         return {
-          fileName: _file,
-          uuid: v4(),
-          mimeType: _file.split('.')[1],
+          ..._file,
+          uuid: body.uuid,
+          mimeType: _file.fileName.split('.')[1],
           creatorId: body.creatorId,
+          batchId: body.batchId,
         }
       })
       return this.productRepository.bulkCreate(saveArr);
@@ -54,13 +58,15 @@ export class MediaConvertService {
   //* DELETE METHODS
   async deteleAllTmpFileDb() {
     const deleteFiles = await this.productRepository.destroy({ where: {} });
-    if(deleteFiles === 0){
+    if (deleteFiles === 0) {
       return {
         message: 'No files to delete',
+        filesDeleted: deleteFiles,
       }
     }
     return {
       message: 'All files deleted',
+      filesDeleted: deleteFiles,
     };
     // console.log('deleteFiles: ', deleteFiles);
     // return deleteFiles;

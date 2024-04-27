@@ -17,8 +17,8 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { MediaConvertService } from './media-convert.service';
-import { CreateMediaConvertDto } from './dto/create-media-convert.dto';
-import {ValidationPipe} from '@nestjs/common'
+import { CreateMediaConvertDto, CreateMediaConvertDtoArray } from './dto/create-media-convert.dto';
+import { ValidationPipe } from '@nestjs/common'
 // import { UpdateMediaConvertDto } from './dto/update-media-convert.dto';
 import {
   FileFieldsInterceptor,
@@ -30,14 +30,15 @@ import { Response } from 'express';
 export class MediaConvertController {
   // eslint-disable-next-line no-unused-vars
   constructor(private readonly mediaConvertService: MediaConvertService) { }
+
+  // * DB METHODS
+  // * GET METHODS
   @Get('/tmp/:fileName')
   seeTempFile(@Res() response: Response, @Param('fileName') fileName: string) {
     // console.log('Param fileName: ', fileName);
     const tempFile = this.mediaConvertService.seeTempFile(fileName);
     return response.sendFile(tempFile);
   }
-  // * DB METHODS
-  // * GET METHODS
   @Get('/tmp')
   getAllTmpFilesDb() {
     return this.mediaConvertService.getAllTmpFilesDb();
@@ -46,6 +47,14 @@ export class MediaConvertController {
   @Get('/tmp/user/:userId')
   getAllUserFilesDb(@Param('userId') userId: string) {
     return this.mediaConvertService.getAllUserFilesDb(userId);
+  }
+
+  @Get('/tmp/download/:fileName')
+  downloadTmpFile(@Res() response: Response, @Param('fileName') fileName: string) {
+    // console.log('Param fileName: ', fileName);
+    const tempFile = this.mediaConvertService.seeTempFile(fileName);
+    console.log('TempFile: ', tempFile);
+    return response.download(tempFile);
   }
 
   // * POST METHODS
@@ -59,7 +68,7 @@ export class MediaConvertController {
     ]),
   )
   // @UsePipes(new ValidationPipe())
-  createBulkDb(@UploadedFiles(SharpPipeArray) mediaFiles: string[], @Body() body: CreateMediaConvertDto) {
+  createBulkDb(@UploadedFiles(SharpPipeArray) mediaFiles: CreateMediaConvertDtoArray[], @Body() body: CreateMediaConvertDto) {
     try {
       // console.log("BODY: ", body)
       return this.mediaConvertService.createBulkConvertDb(mediaFiles, body);
@@ -84,7 +93,6 @@ export class MediaConvertController {
   }
 
   //* DELETE METHODS
-
 
   @Delete('/tmp/files')
   deleteTmpFiles() {

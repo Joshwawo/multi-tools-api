@@ -3,6 +3,7 @@ import * as path from 'node:path';
 import * as fs from 'fs';
 import * as sharp from 'sharp';
 import { v4 } from 'uuid'
+import {CreateMediaConvertDtoArray} from '../../media-convert/dto/create-media-convert.dto'
 
 
 
@@ -65,14 +66,35 @@ export class SharpPipeArray
     //Verificar si es un array
     if (isArrayOfFiles) {
       const _files = image.file as Express.Multer.File[];
-      const filenames: string[] = [];
+      const objFiles = {
+        fieldname: 'file',
+        originalname: 'call-of-duty-black-ops-2-zombies-cod-fps-game.jpg',
+        encoding: '7bit',
+        mimetype: 'image/jpeg',
+        // buffer: Buffer {},
+        size: 424185
+      }
+      // type objFiles = {
+      //   fileName: string,
+      //   uuid: string,
+      //   originalMimeType: string,
+      //   originalName: string,
+      //   originalSize: number,
+      // }
+      const filenames: CreateMediaConvertDtoArray[] = [];
       for (const file of _files) {
-        const originalName = path.parse(file.originalname).name;
+        // console.log('FILE: ', file);
         const filename = v4() + '.webp';
         await sharp(file.buffer)
           .webp({ quality: 80 })
           .toFile(path.join('tmp', filename));
-        filenames.push(filename);
+        filenames.push({
+          fileName: filename,
+          // uuid: v4(),
+          originalMimeType: file.mimetype,
+          originalName: file.originalname,
+          originalSize: file.size,
+        });
       }
       return filenames;
     }
