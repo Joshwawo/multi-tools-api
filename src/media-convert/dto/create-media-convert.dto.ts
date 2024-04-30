@@ -25,3 +25,7 @@ export class CreateMediaConvertDtoArray {
     originalMimeType: string;
     batchId?: string;
 }
+
+export interface IImageTrasform  {
+    file: Express.Multer.File[] 
+}

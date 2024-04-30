@@ -1,10 +1,11 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { CreateMediaConvertDto, CreateMediaConvertDtoArray } from './dto/create-media-convert.dto';
+import { CreateMediaConvertDto, CreateMediaConvertDtoArray, IImageTrasform } from './dto/create-media-convert.dto';
 import { MediaConvertModel } from './entities/media-convert.entity'
 import { InjectModel } from '@nestjs/sequelize';
-import { v4 } from 'uuid';
+import convertImage from './utils/convert-image'
+import type {FormatEnum} from 'sharp';
 
 @Injectable()
 export class MediaConvertService {
@@ -24,8 +25,8 @@ export class MediaConvertService {
   }
 
   //* POST METHODS
-  
-  createBulkConvertDb(mediaFiles: CreateMediaConvertDtoArray[], body: CreateMediaConvertDto) {
+    
+  async createBulkConvertDb(mediaFiles: IImageTrasform, body: CreateMediaConvertDto, target: FormatEnum ) {
 
     try {
       if (!mediaFiles) {
@@ -33,11 +34,12 @@ export class MediaConvertService {
           message: 'No file uploaded',
         };
       }
+      const _mediaFiles = await convertImage.transform(mediaFiles, target)
       // const tmpPath = path.join(__dirname, '..', '..', 'tmp');
       //Agregar uuid y creatorId a cada archivo
       //Crear un nuevo arreglo con los datos de los archivos
-      console.log('mediaFiles: ', mediaFiles);
-      const saveArr = mediaFiles.map((_file) => {
+      // console.log('mediaFiles: ', mediaFiles);
+      const saveArr = _mediaFiles.map((_file) => {
         return {
           ..._file,
           uuid: body.uuid,
@@ -55,6 +57,37 @@ export class MediaConvertService {
       // });
     }
   }
+  
+  // createBulkConvertDb(mediaFiles: CreateMediaConvertDtoArray[], body: CreateMediaConvertDto, target: string ) {
+
+  //   try {
+  //     if (!mediaFiles) {
+  //       return {
+  //         message: 'No file uploaded',
+  //       };
+  //     }
+  //     // const tmpPath = path.join(__dirname, '..', '..', 'tmp');
+  //     //Agregar uuid y creatorId a cada archivo
+  //     //Crear un nuevo arreglo con los datos de los archivos
+  //     console.log('mediaFiles: ', mediaFiles);
+  //     const saveArr = mediaFiles.map((_file) => {
+  //       return {
+  //         ..._file,
+  //         uuid: body.uuid,
+  //         mimeType: _file.fileName.split('.')[1],
+  //         creatorId: body.creatorId,
+  //         batchId: body.batchId,
+  //       }
+  //     })
+  //     return this.productRepository.bulkCreate(saveArr);
+  //   } catch (error) {
+  //     console.log('Error: ', error)
+  //     throw error
+  //     // throw new HttpException('Error creating file', HttpStatus.BAD_REQUEST, {
+  //     //   cause: error,
+  //     // });
+  //   }
+  // }
   //* DELETE METHODS
   async deteleAllTmpFileDb() {
     const deleteFiles = await this.productRepository.destroy({ where: {} });

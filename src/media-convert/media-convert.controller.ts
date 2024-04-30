@@ -15,10 +15,13 @@ import {
   UsePipes,
   HttpException,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import { MediaConvertService } from './media-convert.service';
-import { CreateMediaConvertDto, CreateMediaConvertDtoArray } from './dto/create-media-convert.dto';
+import { CreateMediaConvertDto, CreateMediaConvertDtoArray, IImageTrasform } from './dto/create-media-convert.dto';
 import { ValidationPipe } from '@nestjs/common'
+import type { FormatEnum, AvailableFormatInfo } from 'sharp';
+
 // import { UpdateMediaConvertDto } from './dto/update-media-convert.dto';
 import {
   FileFieldsInterceptor,
@@ -67,14 +70,40 @@ export class MediaConvertController {
       },
     ]),
   )
-  // @UsePipes(new ValidationPipe())
-  createBulkDb(@UploadedFiles(SharpPipeArray) mediaFiles: CreateMediaConvertDtoArray[], @Body() body: CreateMediaConvertDto) {
+  createBulkDb(
+    @UploadedFiles() mediaFiles: IImageTrasform,
+    @Body() body: CreateMediaConvertDto,
+    @Query() query: any,
+  ) {
     try {
-      // console.log("BODY: ", body)
-      return this.mediaConvertService.createBulkConvertDb(mediaFiles, body);
+      if (!('target' in query)) {
+        throw new HttpException('No target query found', HttpStatus.BAD_REQUEST)
+      }
+      const validTargets = {
+        avif: 'avif',
+        dz: 'dz',
+        gif: 'gif',
+        input: 'input',
+        jpeg: 'jpeg',
+        jpg: 'jpg',
+        png: 'png',
+        tiff: 'tiff',
+        tif: 'tif',
+        webp: 'webp',
+      }
+      if (!(query.target in validTargets)) {
+        throw new HttpException('Invalid target format', HttpStatus.BAD_REQUEST)
+      }
+
+
+
+      // if(!('target' in query)){
+      //   throw new HttpException('Invalid target format', HttpStatus.BAD_REQUEST)
+      // }
+      return this.mediaConvertService.createBulkConvertDb(mediaFiles, body, query.target);
     } catch (error) {
       console.log('Error: ', error);
-      throw new HttpException('Error creating file', HttpStatus.BAD_REQUEST)
+      throw error;
     }
   }
 
