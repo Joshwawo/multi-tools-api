@@ -121,6 +121,12 @@ export class MediaConvertController {
     return this.mediaConvertService.create(mediaFile);
   }
 
+  @Post('/transform')
+  @UseInterceptors(FileInterceptor('file'))
+  transform(@UploadedFile() mediaFile: IImageTrasform) {
+    return this.mediaConvertService.Uniqtransform(mediaFile, 'webp');
+  }
+
   //* DELETE METHODS
 
   @Delete('/tmp/files')

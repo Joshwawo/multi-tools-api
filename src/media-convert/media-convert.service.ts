@@ -57,6 +57,17 @@ export class MediaConvertService {
       // });
     }
   }
+
+  async Uniqtransform(mediaFiles: IImageTrasform, target: string) {
+    try {
+        const _mediaFiles = await convertImage.uniqueTransform(mediaFiles, target)
+
+        return _mediaFiles
+
+    } catch (error) {
+      throw error
+    }
+  }
   
   // createBulkConvertDb(mediaFiles: CreateMediaConvertDtoArray[], body: CreateMediaConvertDto, target: string ) {
 
