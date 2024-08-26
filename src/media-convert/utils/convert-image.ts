@@ -43,6 +43,7 @@ async function transform(image: IImageTrasform, target: FormatEnum | AvailableFo
             try {
                 const filename = v4() + `.${target}`
                 await sharp(file.buffer)
+                    // .webp({ quality: 80 })
                     .toFormat(target as AvailableFormatInfo)
                     .toFile(path.join('tmp', filename));
                 filenames.push({

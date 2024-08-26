@@ -5,6 +5,7 @@ import { MediaConvertModule } from './media-convert/media-convert.module';
 import { SequelizeModule } from '@nestjs/sequelize'
 import {databaseConfig} from './database/sqlite'
 import { ConfigModule } from '@nestjs/config';
+import { LexicaModule } from './lexica/lexica.module';
 
 @Module({
   imports: [
@@ -12,7 +13,8 @@ import { ConfigModule } from '@nestjs/config';
     SequelizeModule.forRoot(databaseConfig),
     ConfigModule.forRoot({
       isGlobal: true,
-    })
+    }),
+    LexicaModule
   ],
   controllers: [AppController],
   providers: [AppService],
